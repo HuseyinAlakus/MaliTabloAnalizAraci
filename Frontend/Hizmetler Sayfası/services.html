@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hizmetler</title>
+    <link rel="stylesheet" href="services.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="navbar">
+            <div class="logo">
+                <i class="fas fa-home"></i> 
+            </div>
+            <a href="../AnaSayfa/home.html" >Ana Sayfa</a>
+        </div>
+        <h1>Hizmetlerimiz</h1>
+    </header>
+    <main class="main-content">
+        <section class="intro">
+            <p>
+                Mali Tablo Analiz Aracı, finansal verilerinizi analiz etmek ve geleceğe yönelik tahminler yapmak için güçlü araçlar sunar. 
+                Aşağıda yer alan hizmetlerden birini seçerek detaylara ulaşabilirsiniz.
+            </p>
+        </section>
+        <section class="data-upload">
+            <h2>Veri Yükleme</h2>
+            <p>Finansal verilerinizi yükleyerek analiz sürecinizi başlatın.</p>
+            <form action="/veri-yukle" method="POST" enctype="multipart/form-data">
+                <label for="file-upload">CSV Dosyanızı Seçin:</label>
+                <input type="file" id="file-upload" name="file" accept=".csv" required />
+                <button type="submit">Yükle</button>
+            </form>
+        </section>
+        <section class="services-list">
+            <div class="service-item">
+                <h2>Finansal Analiz</h2>
+                <p>Verilerinizi yükleyerek işletmenizin finansal performansını detaylı bir şekilde analiz edin.</p>
+                <a href="../Finansal/finans.html">Detaylı Bilgi!</a>
+            </div>
+            <div class="service-item">
+                <h2>Raporlama</h2>
+                <p>Detaylı raporlar oluşturarak işletmenizin güçlü ve zayıf yönlerini analiz edin.</p>
+                <a href="../Raporlama/raporlama.html">Detaylı Bilgi!</a>
+            </div>
+            <div class="service-item">
+                <h2>Tahminleme</h2>
+                <p>Geçmiş verilerinizi kullanarak gelecekteki finansal sonuçları tahmin edin.</p>
+                <a href="../Tahmin/tahmin.html">Detaylı Bilgi!</a>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        <p>&copy; 2025 Mali Tablo Analiz Aracı. Tüm Hakları Saklıdır.</p>
+    </footer>
+    <script src="../JS/firebase.js"></script>
+</body>
+</html>

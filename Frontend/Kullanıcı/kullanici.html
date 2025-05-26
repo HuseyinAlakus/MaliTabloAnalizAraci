@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Bilgileri</title>
+    <link rel="stylesheet" href="kullanici.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="../AnaSayfa/home.html"><i class="fas fa-home"></i></a>
+        </div>
+        <a href="../AnaSayfa/home.html">Ana Sayfa</a>
+    </div>
+    
+    <div class="container">
+        <h1>KULLANICI BİLGİLERİ</h1>
+        <form id="registerForm">
+            <div class="input-box">
+                <i class="fas fa-user"></i>
+                <input id="isim" type="text" placeholder="İsim Giriniz..." disabled>
+            </div>
+            <div class="input-box">
+                <i class="fas fa-user"></i>
+                <input id="soyisim" type="text" placeholder="Soyisim Giriniz..." disabled>
+            </div>
+            <div class="input-box">
+                <i class="fas fa-envelope"></i>
+                <input id="email" type="email" placeholder="E-mail Giriniz..." disabled>
+            </div>
+        </form>
+    </div>
+    
+    <script type="module" src="../JS/firebase.js"></script>
+    <script type="module">
+        import { auth, db } from "../JS/firebase.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+    
+        // Kullanıcı giriş yapmış mı kontrol et
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+    
+                    // Input alanlarına Firestore'dan gelen verileri ekleme
+                    document.getElementById("isim").value = userData.isim || "";
+                    document.getElementById("soyisim").value = userData.soyisim || "";
+                    document.getElementById("email").value = userData.email || "";
+                } else {
+                    console.log("Kullanıcı verisi bulunamadı.");
+                }
+            } else {
+                console.log("Kullanıcı oturum açmamış.");
+            }
+        });
+    </script>
+    
+</body>
+</html>

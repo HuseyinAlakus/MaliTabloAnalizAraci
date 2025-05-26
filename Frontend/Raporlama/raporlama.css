@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Oswald", sans-serif;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+
+.container {
+    max-width: 800px;
+    margin: 200px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color:rgba(0, 31, 63);
+}
+
+.upload-section {
+    background: rgba(0, 31, 63,0.5);
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+}
+
+.upload-section input {
+    margin: 10px 0;
+}
+
+.btn {
+    background: #ffd700;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.btn:hover {
+    background: #e6c200;
+}
+
+.results {
+    margin-top: 20px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+}
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 31, 63);
+}
+
+/* Sol Üstte Geri Git Butonu */
+.navbar .back-btn {
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    background: #77889b;
+    border-radius: 6px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.navbar .back-btn i {
+    margin-right: 8px;
+}
+
+.navbar .back-btn:hover {
+    background: white;
+    color: #77889b;
+}
+
+/* Sağdaki Ana Sayfa Butonu ve İkon */
+.right-links {
+    display: flex;
+    align-items: center;
+}
+
+.right-links a {
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    background: #77889b;
+    border-radius: 6px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    transition: 0.3s;
+}
+
+.right-links a:hover {
+    background: white;
+    color: #77889b;
+}
+
+/* Ev ikonu için ekstra stil */
+.right-links .logo i {
+    font-size: 24px;
+    color: white;
+    background-color: #77889b;
+    padding: 1px;
+    border-radius: 6px;
+}
+
+.right-links .logo i:hover {
+    background: white;
+    color: #77889b;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="signup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <i class="fas fa-home"></i>
+        </div>
+        <a href="../AnaSayfa/home.html">Ana Sayfa</a>
+    </div>
+    <div class="container">
+        <h1>SIGN UP</h1>
+        <form action="#">
+            <div class="input-box">
+                <i class="fas fa-user"></i>
+                <input type="isim" placeholder="İsim Giriniz...">
+                <div class="underline"></div>
+            </div>
+            <div class="input-box">
+                <i class="fas fa-user"></i>
+                <input type="soyisim" placeholder="Soyisim Giriniz...">
+                <div class="underline"></div>
+            </div>
+            <div class="input-box">
+                <i class="fas fa-envelope"></i>
+                <input type="email" placeholder="E-mail Giriniz...">
+                <div class="underline"></div>
+            </div>
+            <div class="input-box">
+                <i class="fas fa-key"></i>
+                <input type="password" placeholder="Şifrenizi Giriniz...">
+                <div class="underline"></div>
+            </div>
+            <div class="input-box">
+                <input type="submit" value="Kayıt Ol">
+            </div>
+        </form>
+        <div class="login">Zaten bir hesabınız var mı 
+            <a href="../Login/login.html">Login</a>
+        </div>
+    </div>
+    <script type="module" src="../JS/firebase.js"></script>
+    <script type="module">
+            import { registerUser } from "../JS/firebase.js";
+
+            document.querySelector("form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const isim = document.querySelector("input[placeholder='İsim Giriniz...']").value;
+            const soyisim = document.querySelector("input[placeholder='Soyisim Giriniz...']").value;
+            const email = document.querySelector("input[type='email']").value;
+            const password = document.querySelector("input[type='password']").value;
+
+            try {
+                await registerUser(isim, soyisim, email, password);
+                // Kayıt başarılıysa yönlendir
+                window.location.href = "../Login/login.html";
+            } catch(error) {
+                alert("Kayıt sırasında hata oluştu: " + error.message);
+            }
+            });
+
+      </script>
+       
+</body>
+</html>

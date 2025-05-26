@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finansal Analiz</title>
+    <link rel="stylesheet" href="raporlama.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="navbar">
+        <!-- Geri Git Butonu (Sol Üst) -->
+        <a href="../Hizmetler Sayfası/services.html" class="back-btn"><i class="fas fa-arrow-left"></i> Hizmetler</a>
+        
+        <div class="right-links">
+            <a href="../AnaSayfa/home.html" class="logo"><i class="fas fa-home"></i></a>
+            <a href="../AnaSayfa/home.html">Ana Sayfa</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Raporlama</h1>
+        <div class="upload-section">
+            <h2>CSV Dosyanızı Yükleyin</h2>
+            <input type="file" id="fileInput" accept=".csv">
+            <button class="btn" onclick="handleFileUpload()">Yükle</button>
+        </div>
+        <div class="results" id="results">
+            <h2>Analiz Sonuçları</h2>
+            <p>Burada detaylı raporlar görüntülenecek.</p>
+        </div>
+    </div>
+    <script>
+        function handleFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const resultsDiv = document.getElementById('results');
+            if (fileInput.files.length === 0) {
+                alert('Lütfen bir CSV dosyası seçin.');
+                return;
+            }
+            resultsDiv.innerHTML = '<h2>Analiz Sonuçları</h2><p>Dosyanız başarıyla yüklendi. İşleniyor...</p>';
+            setTimeout(() => {
+                resultsDiv.innerHTML += '<p>Analiz tamamlandı! Sonuçlar burada görünecek.</p>';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

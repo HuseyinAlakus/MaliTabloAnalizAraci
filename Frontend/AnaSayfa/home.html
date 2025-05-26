@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+</head>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">
+                <a href="https://www.bandirma.edu.tr/"></a>
+            </div>
+            <ul>
+                <li><a href="#anasayfa" class="menu-link active">Ana Sayfa</a></li>
+                <li><a href="#hakkimizda" class="menu-link">Hakkımızda</a></li>
+                <li><a href="#hizmetler">Hizmetler</a></li>
+
+                <!-- Kullanıcı bilgileri giriş yaptıysa gösterilecek -->
+                <li id="user-info">
+                    <i class="fas fa-user" style="color: white;"></i>
+                    <a href="../Kullanıcı/kullanici.html" id="user-name"></a>
+                    <button id="logout-btn">Çıkış Yap</button>
+                </li>
+
+                <!-- Giriş yap/kayıt ol bağlantısı -->
+                <li id="auth">
+                    <a href="../Login/login.html">Giriş Yap/Kayıt Ol</a>
+                </li>
+            </ul>
+
+        </div>
+        <div id="anasayfa" class="container content">
+            <div class="text">
+                <h1>Mali Tablo Analiz Aracı</h1>
+                <p>Geçmiş finansal verilerinizi analiz edin, kâr-zarar oranlarınızı görün ve yapay zeka tahminleriyle geleceğe hazırlanın!</p>
+            </div>
+            <div class="resim">
+                <img src="img.jpg">
+            </div>
+        </div>
+        <div id="hakkimizda" class="hakkimizda">
+            <h1>Hakkımızda</h1>
+            <p>Mali Tablo Analiz Aracı olarak, işletmelerin geçmiş finansal performanslarını analiz etmelerini ve geleceğe dair daha bilinçli, stratejik kararlar almalarını sağlıyoruz. Yapay zeka destekli tahmin modellerimizle, kâr-zarar oranlarınızı detaylı bir şekilde inceleyebilir, gelecekteki potansiyel senaryoları öngörebilir ve işinizi bir adım öne taşıyabilirsiniz.
+
+                İnovasyonu ve teknolojiyi bir araya getirerek, finansal süreçlerinizi optimize etmenize yardımcı oluyoruz. Kullanıcı dostu arayüzümüz sayesinde her seviyeden işletmeye, büyüklüğüne veya deneyim düzeyine bakılmaksızın etkili ve pratik çözümler sunuyoruz.
+                
+                Geleceğin finans dünyasına hazırlıklı adım atmanız için buradayız. Sürdürülebilir başarıyı birlikte inşa edelim!!</p>
+        </div>
+        <div id="hizmetler" class="hizmetler-bolumu">
+            <div class="hizmetler">
+                <h1>Hizmetlerimiz</h1>
+                <p>
+                    Mali Tablo Analiz Aracı olarak, işletmelerin finansal süreçlerini daha etkili ve verimli hale getirmek için kapsamlı hizmetler sunuyoruz. Kullanıcılarımız, geçmiş finansal verilerini yükleyerek, kâr-zarar analizlerini detaylı bir şekilde görüntüleyebilir ve yapay zeka destekli tahmin modelleriyle gelecekteki iş kararlarını daha stratejik şekilde alabilirler.
+                </p>
+            </div>
+        
+
+            <div class="resim-bolumu">
+                <img src="hizmetler-img.jpg" alt="Hizmetler Resmi" class="resim">
+                <button onclick="window.location.href='../Hizmetler Sayfası/services.html'" class="resim-button">Hizmetler Sayfası</button>
+            </div>
+        </div>
+        
+    </div>
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>İletişim</h3>
+                <p>Telefon: +90 545 651 9605</p>
+
+                <p>E-posta: huseyinalakus@ogr.bandirma.edu.tr</p>
+                
+                <p>Adres: Bandırma Onyedi Eylül Üniversitesi Merkez Yerleşkesi 10200 Bandırma / Balıkesir Türkiye</p>
+            </div>
+            <div class="footer-section">
+                <h3>Sosyal Medya</h3>
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/huseyin.alakus.1297" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://x.com/HuseynAlakus" target="_blank"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.instagram.com/huseynalakus/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.linkedin.com/in/h%C3%BCseyin-alakus-a8605a258/" target="_blank"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Hakkımızda</h3>
+                <p>Mali Tablo Analiz Aracı, işletmeler için güçlü analiz araçları sunar. Daha fazla bilgi için bizimle iletişime geçin.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Mali Tablo Analiz Aracı. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+    
+
+
+
+    <script src="../JS/scroll.js"></script>
+    <script type="module" src="../JS/firebase.js"></script>
+    <script type="module" src="../JS/auth.js"></script>
+      
+    <script type="module">
+    import { checkUser, logoutUser } from "../JS/auth.js";
+
+    // DOM yüklendiğinde çalıştır
+    window.addEventListener("DOMContentLoaded", () => {
+        checkUser();
+
+        // Bu buton sadece kullanıcı giriş yaptıysa var olur
+        const logoutBtn = document.getElementById("logout-btn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", logoutUser);
+        }
+    });
+</script>
+
+</body>
+</html>
