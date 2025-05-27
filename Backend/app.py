@@ -1,22 +1,23 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+import os
+import google.generativeai as genai  # Gemini için gerekli
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-# Sentiment modeli kurulumu
-model_name = "savasy/bert-base-turkish-sentiment-cased"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSequenceClassification.from_pretrained(model_name)
-sentiment_analyzer = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+# Gemini API anahtarını yapılandır
+genai.configure(api_key="AIzaSyCbbmCskodgNlDorEN9V3eQAsr35bmP9P8")
+
+# Gemini modelini tanımla
+gemini_model = genai.GenerativeModel("gemini-2.0-flash")
 
 def generate_financial_comment(old_value, new_value, label):
     if new_value > old_value:
-        return f"{label} oranı {old_value:.2f}’ten {new_value:.2f}’ye yükseldi."
+        return f"{label} oranı {old_value:,.2f}’den {new_value:,.2f}’ye yükseldi."
     elif new_value < old_value:
-        return f"{label} oranı {old_value:.2f}’ten {new_value:.2f}’ye düştü."
+        return f"{label} oranı {old_value:,.2f}’den {new_value:,.2f}’ye düştü."
     else:
         return f"{label} oranı değişmedi."
 
@@ -34,45 +35,50 @@ def analyze_csv():
 
     results = []
 
-    # Tablo başlıklarını tespit et
     table_starts = df_raw[df_raw[0].str.contains("TABLOSU", na=False)].index.tolist()
-    table_starts.append(len(df_raw))  # son tabloyu işleyebilmek için
+    table_starts.append(len(df_raw))
 
-    # Her tablo için
     for i in range(len(table_starts) - 1):
         table_df = df_raw.iloc[table_starts[i] + 1:table_starts[i + 1]].copy()
-
-        # İlk satırı başlık olarak ayarla
         table_df.columns = table_df.iloc[0]
         table_df = table_df[1:]
-
-        # İlk sütunu indeks olarak ayarla
         table_df = table_df.set_index(table_df.columns[0])
-
-        # Geçersiz satırları (örneğin Sunum Para Birimi gibi) çıkar
         table_df = table_df.apply(pd.to_numeric, errors='coerce')
         table_df = table_df.dropna()
-
-        # Transpose ederek dönemleri satır haline getir (analiz kolaylığı için)
         table_df = table_df.transpose()
 
-        # Yalnızca ilk ve son dönem karşılaştırmasını yap
         for col in table_df.columns:
             try:
                 old = float(table_df[col].iloc[0])
                 new = float(table_df[col].iloc[-1])
                 comment = generate_financial_comment(old, new, col)
-                sentiment = sentiment_analyzer(comment)[0]
                 results.append({
                     "oran": col,
-                    "yorum": comment,
-                    "duygu": sentiment['label'],
-                    "guven": round(sentiment['score'], 2)
+                    "yorum": comment
                 })
-            except:
-                continue  # float'a çevrilemeyen verileri atla
+            except Exception:
+                continue
 
-    return jsonify(results)
+    # Gemini ile genel analiz üretimi
+    try:
+        yorumlar = "\n".join([f"{item['oran']}: {item['yorum']}" for item in results])
+        prompt = (
+            "Aşağıdaki finansal değişim yorumlarına göre şirketin genel mali durumu nasıldır? "
+            "Yorumları analiz et ve kısa bir genel değerlendirme yap:\n" + yorumlar
+        )
+
+        gemini_response = gemini_model.generate_content(prompt)
+        genel_yorum = gemini_response.text.strip()
+
+        if not genel_yorum or len(genel_yorum.split()) < 5:
+            genel_yorum = "Yapay zeka modeli anlamlı bir genel analiz üretemedi. Lütfen daha kısa bir veri setiyle tekrar deneyin."
+    except Exception as e:
+        genel_yorum = f"Genel finansal analiz yapılamadı: {str(e)}"
+
+    return jsonify({
+        "results": results,
+        "genel_yorum": genel_yorum
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -30,51 +30,63 @@
             <p>Burada finansal analiz sonuçları görüntülenecek.</p>
         </div>
     </div>
-                <script>
-            async function handleFileUpload() {
-                const fileInput = document.getElementById('fileInput');
-                const resultsDiv = document.getElementById('results');
+            <script>
+        async function handleFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const resultsDiv = document.getElementById('results');
 
-                if (fileInput.files.length === 0) {
-                    alert("Lütfen bir dosya seçin.");
+            if (fileInput.files.length === 0) {
+                alert("Lütfen bir dosya seçin.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            resultsDiv.innerHTML = "<p>Dosya yükleniyor, lütfen bekleyin...</p>";
+
+            try {
+                const response = await fetch("http://127.0.0.1:5000/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = "<h2>Yapay Zeka Yorumları</h2>";
+
+                if (!data.results || data.results.length === 0) {
+                    resultsDiv.innerHTML += "<p>Herhangi bir analiz sonucu alınamadı.</p>";
                     return;
                 }
 
-                const file = fileInput.files[0];
-                const formData = new FormData();
-                formData.append("file", file);
+                // Yorumları listele
+                data.results.forEach(item => {
+                    resultsDiv.innerHTML += `
+                        <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+                            <strong>${item.oran}</strong><br>
+                            ${item.yorum}
+                        </div>
+                    `;
+                });
 
-                resultsDiv.innerHTML = "<p>Dosya yükleniyor, lütfen bekleyin...</p>";
-
-                try {
-                    const response = await fetch("http://127.0.0.1:5000/analyze", {
-                        method: "POST",
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    resultsDiv.innerHTML = "<h2>Yapay Zeka Yorumları</h2>";
-
-                    if (data.length === 0) {
-                        resultsDiv.innerHTML += "<p>Herhangi bir analiz sonucu alınamadı.</p>";
-                        return;
-                    }
-
-                    data.forEach(item => {
-                        resultsDiv.innerHTML += `
-                            <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                                <strong>${item.oran}</strong><br>
-                                ${item.yorum}<br>
-                                <em>Duygu:</em> ${item.duygu}, <em>Güven:</em> ${item.guven}
-                            </div>
-                        `;
-                    });
-                } catch (error) {
-                    resultsDiv.innerHTML = `<p style="color:red;">Hata oluştu: ${error.message}</p>`;
+                // Genel yorum varsa göster
+                if (data.genel_yorum) {
+                    resultsDiv.innerHTML += `
+                        <div style="border:2px solid #ffd700; padding:15px; margin:20px 0; background:#fffbe6;">
+                            <strong>Genel Yapay Zeka Yorumu:</strong><br>
+                            <span>${data.genel_yorum}</span>
+                        </div>
+                    `;
                 }
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color:red;">Hata oluştu: ${error.message}</p>`;
             }
-        </script>
+        }
+    </script>
+
 
 
 </body>
