@@ -3,6 +3,10 @@ from flask_cors import CORS
 import pandas as pd
 import os
 import google.generativeai as genai  # Gemini için gerekli
+import re
+
+
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -20,6 +24,34 @@ def generate_financial_comment(old_value, new_value, label):
         return f"{label} oranı {old_value:,.2f}’den {new_value:,.2f}’ye düştü."
     else:
         return f"{label} oranı değişmedi."
+    
+def temizle_ve_duzenle_yorum(metin):
+    basliklar = [
+        "Genel Yapay Zeka Yorumu", "Olumlu Yönler", "Olumlu Gelişmeler",
+        "Olumsuz Yönler", "Olumsuz Gelişmeler", "Genel Değerlendirme",
+        "Öneri", "Öneriler", "Sonuç", "Uyarı", "Dikkat Edilmesi Gerekenler"
+    ]
+
+    for b in basliklar:
+        # Markdown yerine HTML etiketleriyle biçimlendir
+        metin = re.sub(
+            rf"[-\*\s]*{b}[:：]?",
+            rf"<h3 style='margin-top: 20px; color:#333;'>{b}</h3>",
+            metin,
+            flags=re.IGNORECASE
+        )
+
+    # Madde işaretlerini <li> gibi yapmaya gerek yoksa sadece düz çizgi ile bırak
+    metin = re.sub(r"\n\s*\*\s*", "\n- ", metin)
+    metin = re.sub(r"(?<!- )\n\s*-\s*", "\n- ", metin)
+
+    # Çift newline yerine <br> kullanabilirsin veya sadece düzenli hale getir
+    metin = re.sub(r"\n{2,}", "\n", metin)
+
+    return metin.strip()
+
+
+
 
 @app.route('/analyze', methods=['POST'])
 def analyze_csv():
@@ -68,7 +100,7 @@ def analyze_csv():
         )
 
         gemini_response = gemini_model.generate_content(prompt)
-        genel_yorum = gemini_response.text.strip()
+        genel_yorum = temizle_ve_duzenle_yorum(gemini_response.text)
 
         if not genel_yorum or len(genel_yorum.split()) < 5:
             genel_yorum = "Yapay zeka modeli anlamlı bir genel analiz üretemedi. Lütfen daha kısa bir veri setiyle tekrar deneyin."
