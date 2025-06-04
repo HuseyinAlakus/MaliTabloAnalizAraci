@@ -9,7 +9,6 @@
 </head>
 <body>
     <div class="navbar">
-        <!-- Geri Git Butonu (Sol Üst) -->
         <a href="../Hizmetler Sayfası/services.html" class="back-btn"><i class="fas fa-arrow-left"></i> Hizmetler</a>
         
         <div class="right-links">
@@ -30,64 +29,107 @@
             <p>Burada finansal analiz sonuçları görüntülenecek.</p>
         </div>
     </div>
-            <script>
-        async function handleFileUpload() {
-            const fileInput = document.getElementById('fileInput');
-            const resultsDiv = document.getElementById('results');
+       <script>
+    async function handleFileUpload() {
+        const fileInput = document.getElementById('fileInput');
+        const resultsDiv = document.getElementById('results');
 
-            if (fileInput.files.length === 0) {
-                alert("Lütfen bir dosya seçin.");
+        // Custom alert/modal implementation instead of alert()
+        const showMessage = (message, type = 'info') => {
+            let messageDiv = document.getElementById('appMessage');
+            if (!messageDiv) {
+                messageDiv = document.createElement('div');
+                messageDiv.id = 'appMessage';
+                messageDiv.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white z-50';
+                document.body.appendChild(messageDiv);
+            }
+            messageDiv.textContent = message;
+            messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white z-50 
+                                   ${type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
+        };
+
+        if (fileInput.files.length === 0) {
+            showMessage("Lütfen bir dosya seçin.", 'error'); // alert() yerine özel mesaj
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Dosya içeriğini oku ve localStorage'a kaydet (Değişiklik yok)
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            localStorage.setItem("csvData", e.target.result);  // CSV verisini sakla
+        };
+        reader.readAsText(file);
+
+        resultsDiv.innerHTML = "<p class='text-center text-gray-500'>Dosya yükleniyor, lütfen bekleyin...</p>";
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000/analyze", {
+                method: "POST",
+                body: formData
+            });
+
+            // HTTP yanıtının başarılı olup olmadığını kontrol et
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP hata kodu: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            resultsDiv.innerHTML = `
+                <h2 class="text-blue-600">Yapay Zeka Yorumları</h2>
+                <div class="comments-grid" id="commentGrid"></div>
+            `;
+
+            const commentGrid = document.getElementById('commentGrid');
+
+            if (!data.results || data.results.length === 0) {
+                commentGrid.innerHTML = "<p class='text-gray-500'>Herhangi bir analiz sonucu alınamadı.</p>";
                 return;
             }
 
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append("file", file);
+            data.results.forEach(item => {
+                commentGrid.insertAdjacentHTML("beforeend", `
+                    <div class="comment-card">
+                        <strong>${item.oran}</strong>
+                        <p>${item.yorum}</p>
+                    </div>
+                `);
+            });
 
-            resultsDiv.innerHTML = "<p>Dosya yükleniyor, lütfen bekleyin...</p>";
+            // Genel yorum + butonlar
+            if (data.genel_yorum) {
+                const generalCommentDiv = document.createElement('div');
+                generalCommentDiv.className = 'general-comment';
+                generalCommentDiv.innerHTML = `
+                    <strong>Genel Yapay Zeka Yorumu</strong>
+                    <div class="ai-comment-html"></div>
+                    <div class="button-group">
+                        <a class="btn" href="../Raporlama/raporlama.html">Raporlama</a>
+                        <a class="btn" href="../Tahmin/tahmin.html">Tahminleme</a>
+                    </div>
+                `;
+                resultsDiv.appendChild(generalCommentDiv);
 
-            try {
-                const response = await fetch("http://127.0.0.1:5000/analyze", {
-                    method: "POST",
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                resultsDiv.innerHTML = "<h2>Yapay Zeka Yorumları</h2>";
-
-                if (!data.results || data.results.length === 0) {
-                    resultsDiv.innerHTML += "<p>Herhangi bir analiz sonucu alınamadı.</p>";
-                    return;
-                }
-
-                // Yorumları listele
-                data.results.forEach(item => {
-                    resultsDiv.innerHTML += `
-                        <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-                            <strong>${item.oran}</strong><br>
-                            ${item.yorum}
-                        </div>
-                    `;
-                });
-
-                // Genel yorum varsa göster
-                if (data.genel_yorum) {
-                    resultsDiv.innerHTML += `
-                        <div style="border:2px solid #ffd700; padding:15px; margin:20px 0; background:#fffbe6;">
-                            <strong>Genel Yapay Zeka Yorumu:</strong><br>
-                            <span>${data.genel_yorum}</span>
-                        </div>
-                    `;
-                }
-
-            } catch (error) {
-                resultsDiv.innerHTML = `<p style="color:red;">Hata oluştu: ${error.message}</p>`;
+                // Python'dan gelen HTML içeriğini güvenli bir şekilde ekle
+                // Bu kısım, genel_yorum'un HTML etiketlerini doğru bir şekilde işlemesini sağlar.
+                const aiCommentHtmlDiv = generalCommentDiv.querySelector('.ai-comment-html');
+                aiCommentHtmlDiv.innerHTML = data.genel_yorum;
             }
+
+        } catch (error) {
+            resultsDiv.innerHTML = `<p class="text-red-500">Hata oluştu: ${error.message}</p>`;
+            showMessage(`Analiz sırasında hata oluştu: ${error.message}`, 'error'); // Özel mesaj kutusu ile hata gösterimi
         }
-    </script>
-
-
-
+    }
+</script>
 </body>
 </html>

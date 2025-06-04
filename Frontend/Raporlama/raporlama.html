@@ -9,7 +9,6 @@
 </head>
 <body>
     <div class="navbar">
-        <!-- Geri Git Butonu (Sol Üst) -->
         <a href="../Hizmetler Sayfası/services.html" class="back-btn"><i class="fas fa-arrow-left"></i> Hizmetler</a>
         
         <div class="right-links">
@@ -30,19 +29,85 @@
             <p>Burada detaylı raporlar görüntülenecek.</p>
         </div>
     </div>
-    <script>
-        function handleFileUpload() {
-            const fileInput = document.getElementById('fileInput');
-            const resultsDiv = document.getElementById('results');
-            if (fileInput.files.length === 0) {
-                alert('Lütfen bir CSV dosyası seçin.');
-                return;
-            }
-            resultsDiv.innerHTML = '<h2>Analiz Sonuçları</h2><p>Dosyanız başarıyla yüklendi. İşleniyor...</p>';
-            setTimeout(() => {
-                resultsDiv.innerHTML += '<p>Analiz tamamlandı! Sonuçlar burada görünecek.</p>';
-            }, 2000);
+<script>
+  // Sayfa yüklendiğinde geçmiş CSV varsa işle
+  window.addEventListener('DOMContentLoaded', async () => {
+    const csvData = localStorage.getItem("csvData");
+    const resultsDiv = document.getElementById('results');
+
+    if (!csvData) {
+        resultsDiv.innerHTML = "<p style='color:red;'>CSV verisi bulunamadı. Lütfen finansal analiz sayfasından tekrar yükleyin.</p>";
+        return;
+    }
+
+    resultsDiv.innerHTML = "<p>Önceki veriler analiz ediliyor, lütfen bekleyin...</p>";
+
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const file = new File([blob], "veri.csv");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("http://127.0.0.1:5000/grafik-analyze", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        resultsDiv.innerHTML = `<h2>Grafikler ve Yapay Zeka Yorumları</h2>`;
+
+        if (!data.grafikler || Object.keys(data.grafikler).length === 0) {
+            resultsDiv.innerHTML += "<p>Hiçbir grafik oluşturulamadı.</p>";
+            return;
         }
-    </script>
+
+        for (const [baslik, imgData] of Object.entries(data.grafikler)) {
+            resultsDiv.innerHTML += `
+                <div class="chart-card">
+                    <h3>${baslik}</h3>
+                    <img src="${imgData}" alt="${baslik} grafiği" style="max-width: 100%; border:1px solid #ccc; margin-bottom: 10px;">
+                </div>
+            `;
+        }
+
+        if (data.ai_yorumlar && data.ai_yorumlar.length > 0) {
+            resultsDiv.innerHTML += `<div class="comment-section"><h2>Yapay Zeka Yorumları</h2></div>`;
+            const yorumDiv = document.querySelector(".comment-section");
+
+            data.ai_yorumlar.forEach(item => {
+                yorumDiv.innerHTML += `
+                    <div class="comment-card">
+                        <strong>${item.baslik}</strong>
+                        <p>${item.yorum}</p>
+                    </div>
+                `;
+            });
+        }
+
+    } catch (error) {
+        resultsDiv.innerHTML = `<p style="color:red;">Hata oluştu: ${error.message}</p>`;
+    }
+  });
+
+  // Bu fonksiyon HTML'deki butondan çağrılıyor
+  window.handleFileUpload = function() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Lütfen bir dosya seçin.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const csvContent = e.target.result;
+        localStorage.setItem("csvData", csvContent);
+        location.reload(); // Sayfayı yenileyerek DOMContentLoaded tetiklenir
+    };
+    reader.readAsText(file);
+  };
+</script>
 </body>
 </html>

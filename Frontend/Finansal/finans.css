@@ -130,3 +130,127 @@ h1 {
     background: white;
     color: #77889b;
 }
+
+.results {
+margin-top: 20px;
+padding: 20px;
+background: #ffffff;
+border-radius: 10px;
+box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.05);
+}
+.results h2 {
+font-size: 2rem; /* Başlık boyutu */
+color: rgba(0, 31, 63);
+margin-bottom: 25px;
+text-align: center; /* Başlığı ortala */
+position: relative;
+padding-bottom: 10px;
+}
+.results h2::after {
+content: '';
+position: absolute;
+left: 50%;
+bottom: 0;
+transform: translateX(-50%);
+width: 80px;
+height: 3px;
+background-color: #ffd700;
+border-radius: 5px;
+}
+/* Yorum kartları için flexbox düzeni */
+.comments-grid {
+display: flex;
+flex-wrap: wrap; /* Yorumları alt satıra geçmesini sağlar */
+justify-content: center; /* Yorumları ortalar */
+gap: 20px; /* Yorumlar arası boşluk */
+margin-bottom: 30px;
+}
+.comment-card {
+flex: 1 1 calc(50% - 20px); /* İkişerli düzen, boşlukları hesaba katarak */
+min-width: 300px; /* Kartların minimum genişliği */
+background-color: #f9f9f9;
+border: 1px solid #e0e0e0;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+text-align: left;
+transition: transform 0.2s ease-in-out;
+}
+.comment-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.comment-card strong {
+color: rgba(0, 31, 63);
+font-size: 1.1rem;
+display: block;
+margin-bottom: 8px;
+}
+.comment-card p {
+color: #555;
+line-height: 1.6;
+}
+/* Genel yorum stili */
+.general-comment {
+border: 2px solid #ffd700;
+padding: 25px; /* Daha fazla padding */
+margin: 30px 0;
+background: #fffbe6;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+text-align: left;
+}
+.general-comment strong {
+color: rgba(0, 31, 63);
+font-size: 1.3rem;
+display: block;
+margin-bottom: 15px;
+text-align: center;
+}
+.general-comment span {
+color: #333;
+line-height: 1.7;
+}
+@media (max-width: 768px) {
+.navbar {
+flex-direction: column;
+padding: 10px;
+}
+.navbar .back-btn,
+.right-links {
+margin-bottom: 10px;
+}
+.container {
+margin: 100px auto 20px auto;
+padding: 15px;
+}
+.upload-section input[type="file"] {
+width: 100%;
+margin-bottom: 10px;
+}
+.btn {
+width: 100%;
+}
+.comment-card {
+flex: 1 1 100%; /* Mobil cihazlarda tek sütun */
+min-width: unset;
+}
+}
+.button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.button-group .btn {
+    text-decoration: none;
+}
+.ai-heading {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-top: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}

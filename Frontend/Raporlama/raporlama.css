@@ -130,3 +130,19 @@ h1 {
     background: white;
     color: #77889b;
 }
+.chart-card, .comment-card {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.comment-card p {
+    margin-top: 5px;
+}
+
+.comment-section h2 {
+    margin-top: 30px;
+    color: #333;
+}
