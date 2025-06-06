@@ -84,7 +84,15 @@
                     </div>
                 `;
             });
+
+            yorumDiv.innerHTML += `
+                <div class="button-group">
+                    <a class="btn" href="../Raporlama/raporlama.html">Raporlama</a>
+                    <a class="btn" href="../Tahmin/tahmin.html">Tahminleme</a>
+                </div>
+            `;
         }
+
 
     } catch (error) {
         resultsDiv.innerHTML = `<p style="color:red;">Hata oluştu: ${error.message}</p>`;

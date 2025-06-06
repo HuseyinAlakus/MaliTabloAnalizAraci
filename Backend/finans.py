@@ -8,11 +8,9 @@ import re
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-# Gemini API anahtarını yapılandır
-# Not: API anahtarınızı doğrudan koda gömmek yerine, güvenli bir şekilde ortam değişkenlerinden veya bir yapılandırma dosyasından okumanız önerilir.
 genai.configure(api_key="AIzaSyCbbmCskodgNlDorEN9V3eQAsr35bmP9P8")
 
-# Gemini modelini tanımla
+
 gemini_model = genai.GenerativeModel("gemini-2.0-flash")
 
 def generate_financial_comment(old_value, new_value, label):
@@ -134,5 +132,4 @@ def analyze_csv():
 
 
 if __name__ == '__main__':
-    # Uygulamayı hata ayıklama modunda çalıştır
     app.run(debug=True)
