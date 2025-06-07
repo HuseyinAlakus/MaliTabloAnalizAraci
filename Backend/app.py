@@ -2,10 +2,15 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib.ticker import FuncFormatter
+import seaborn as sns
 import io
 import base64
 import google.generativeai as genai
 import re
+import matplotlib
+matplotlib.use('Agg')
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})
@@ -54,74 +59,93 @@ def temizle_ve_duzenle_yorum(metin):
     return "\n".join(duzenlenmis_html_parcalar)
 
 def grafik_uret(df, baslik, y_etiketi, is_bar=False, kar_zarar=False):
-    import matplotlib.dates as mdates
+
+    sns.set_theme(style="whitegrid")
 
     img = io.BytesIO()
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(11, 5))
 
     df_copy = df.copy()
 
     try:
-        df_copy.index = pd.to_datetime(df_copy.index, errors='coerce', format="%Y/%m")
-        if df_copy.index.isnull().all():
-            df_copy.index = pd.to_datetime(df_copy.index, errors='coerce', format="%Y")
+        index_str = pd.Series(df_copy.index.astype(str))
+
+        if index_str.str.fullmatch(r"\d{4}").all():
+            df_copy.index = pd.to_datetime(index_str, format="%Y", errors="coerce")
+        elif index_str.str.fullmatch(r"\d{4}[-/]\d{2}").all():
+            if "/" in index_str.iloc[0]:
+                df_copy.index = pd.to_datetime(index_str, format="%Y/%m", errors="coerce")
+            else:
+                df_copy.index = pd.to_datetime(index_str, format="%Y-%m", errors="coerce")
+        else:
+            df_copy.index = pd.to_datetime(index_str, errors="coerce")
+
+        df_copy = df_copy.dropna()
         df_copy = df_copy.sort_index()
-        if df_copy.index.isnull().all():
-            df_copy.index = df.index  # fallback to original index
+
     except Exception as e:
-        print(f"Zaman dönüştürme hatası: {e}")
+        print(f"Tarih dönüşüm hatası: {str(e)}")
         df_copy.index = df.index
 
+    if df_copy.empty or df_copy.index.isnull().all() or df_copy.shape[0] < 2:
+        plt.close(fig)
+        return None
+
+    renkler = sns.color_palette("deep")
+
     if kar_zarar:
-        if "Net Dönem Kârı (Zararı)" in df_copy.columns:
-            kar_zarar_degerleri = df_copy["Net Dönem Kârı (Zararı)"]
-
-            if kar_zarar_degerleri.empty or kar_zarar_degerleri.isnull().all():
-                print("Kâr/Zarar verisi boş.")
-                plt.close(fig)
-                return None
-
-            colors = ['green' if v >= 0 else 'red' for v in kar_zarar_degerleri]
-            ax.bar(df_copy.index, kar_zarar_degerleri, color=colors)
+        if df_copy.shape[1] == 1:
+            values = df_copy.iloc[:, 0]
+            renkler_kar_zarar = ['green' if v >= 0 else 'red' for v in values]
+            ax.bar(df_copy.index, values, color=renkler_kar_zarar)
             ax.set_title("Yıllara Göre Kâr/Zarar", fontsize=14, fontweight='bold')
-            ax.set_ylabel("Tutar (TL)")
+            ax.set_ylabel("Tutar (M TL)")
         else:
-            print("'Net Dönem Kârı (Zararı)' bulunamadı.")
             plt.close(fig)
             return None
     elif is_bar:
-        if not df_copy.empty and df_copy.shape[1] == 1:
-            ax.bar(df_copy.index, df_copy.iloc[:, 0], color="#6699CC")
+        if df_copy.shape[1] == 1:
+            ax.bar(df_copy.index, df_copy.iloc[:, 0], color=renkler[0])
             ax.set_title(baslik, fontsize=14, fontweight='bold')
-            ax.set_ylabel(y_etiketi)
+            ax.set_ylabel(f"{y_etiketi} (M TL)")
         else:
-            print("Bar grafik için uygun değil.")
             plt.close(fig)
             return None
     else:
-        if not df_copy.empty:
-            ax.plot(df_copy.index, df_copy.iloc[:, 0], marker='o', linestyle='-', color="#1f77b4")
+        if df_copy.shape[1] == 1:
+            ax.plot(df_copy.index, df_copy.iloc[:, 0], marker='o', linestyle='-', color=renkler[1])
             ax.set_title(baslik, fontsize=14, fontweight='bold')
-            ax.set_ylabel(y_etiketi)
+            ax.set_ylabel(f"{y_etiketi} (M TL)")
         else:
-            print("Çizgi grafik için boş.")
             plt.close(fig)
             return None
 
     ax.set_xlabel("Dönem")
     ax.grid(True, linestyle='--', alpha=0.4)
 
-    # X ekseni yıl formatında
+    # Tarih ekseni formatlama
     if isinstance(df_copy.index[0], pd.Timestamp):
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-        ax.xaxis.set_major_locator(mdates.YearLocator())
+        locator = mdates.YearLocator() if df_copy.index.max() - df_copy.index.min() > pd.Timedelta(days=370) else mdates.MonthLocator()
+        formatter = mdates.DateFormatter('%Y') if isinstance(locator, mdates.YearLocator) else mdates.DateFormatter('%Y-%m')
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(formatter)
         fig.autofmt_xdate()
+    else:
+        ax.set_xticks(range(len(df_copy.index)))
+        ax.set_xticklabels([str(i)[:4] for i in df_copy.index], rotation=45)
+
+    def milyon_tl_formatter(x, _):
+        return f"{x/1e6:.1f}M"
+
+    ax.yaxis.set_major_formatter(FuncFormatter(milyon_tl_formatter))
 
     plt.tight_layout()
     plt.savefig(img, format='png', bbox_inches='tight')
     plt.close(fig)
     img.seek(0)
+
     return f"data:image/png;base64,{base64.b64encode(img.getvalue()).decode()}"
+
 
 @app.route('/analyze', methods=['POST'])
 def analyze_csv():
@@ -211,142 +235,102 @@ def grafik_analyze():
 
     file = request.files['file']
     try:
-        df_raw = pd.read_csv(file, sep=";", header=None)
-        print("CSV Ham Veri:")
-        print(df_raw) # Tamamını görmek için
+        lines = file.read().decode('utf-8').splitlines()
     except Exception as e:
-        print(f"Dosya okunamadı: {str(e)}")
         return jsonify({"error": f"Dosya okunamadı: {str(e)}"}), 400
 
     grafikler = {}
     ai_yorumlar = []
 
-    table_starts = df_raw[df_raw[0].str.contains("TABLOSU", na=False)].index.tolist()
-    table_starts.append(len(df_raw))
-
-    # İlgilendiğimiz sütunlar (grafik ve yorum üretilecekler)
-    hedef_sutunlar = [
+    hedef_kalemler = [
         "Toplam Varlıklar",
-        "Özsermaye",
+        "Toplam Özkaynaklar",   # "Özsermaye" yerine bunu alın
         "Toplam Yükümlülükler",
         "Net Dönem Kârı (Zararı)",
         "Hasılat",
         "Esas Faaliyet Kârı (Zararı)"
     ]
 
-    for i in range(len(table_starts) - 1):
-        start, end = table_starts[i], table_starts[i + 1]
-        
-        # Başlık satırını bulma
-        if start + 1 < len(df_raw):
 
+    current_table_name = None
+    current_headers = []
+    current_rows = []
 
-            # Tablo başlığı (FİNANSAL DURUM TABLOSU gibi)
-            table_name = df_raw.iloc[start, 0] if start < len(df_raw) else "Bilinmeyen Tablo"
-            header_row_raw = df_raw.iloc[start + 1].tolist()
-            donem_headers = [str(h).strip() for h in header_row_raw[1:] if pd.notna(h) and str(h).strip() != '']
-            data_content = df_raw.iloc[start + 2:end].copy()
-            
-            if data_content.empty:
-                print(f"Uyarı: Tablo '{table_name}' için veri satırı bulunamadı. Atlanıyor.")
-                continue
-            
-            # DataFrame'i baştan oluşturma
-            df_current_table = pd.DataFrame()
-            if not data_content.empty:
-                # İlk sütun "Kalem Adı" olacak
-                df_current_table['Kalem Adı'] = data_content.iloc[:, 0].astype(str)
-                
-                # Dönem sütunlarını ekle
-                # data_content'in ilk sütunundan sonraki sütunları kullan
-                for j, donem_col in enumerate(donem_headers):
-                    if (j + 1) < data_content.shape[1]: # data_content sütun sınırlarını aşma
-                        col_data = data_content.iloc[:, j + 1].astype(str)
-                        # Sayısal dönüşüm burada yapılmalı
-                        col_data = col_data.str.replace('.', '', regex=False).str.replace(',', '.', regex=False)
-                        df_current_table[donem_col] = pd.to_numeric(col_data, errors='coerce')
-                    else:
-                        print(f"Uyarı: '{table_name}' tablosunda '{donem_col}' dönemi için veri sütunu bulunamadı.")
-                        df_current_table[donem_col] = pd.NA # Yoksa boş bırak
+    def process_current_table():
+        nonlocal grafikler, ai_yorumlar
+        if not current_table_name or not current_headers or not current_rows:
+            return
 
-                # Kalem Adı sütununu index yap
-                df_current_table = df_current_table.set_index('Kalem Adı')
-                df_current_table = df_current_table.dropna(how='all', axis=1) # Tamamen NaN olan dönem sütunlarını at
-                df_current_table = df_current_table.dropna(how='all', axis=0) # Tamamen NaN olan kalem satırlarını at
+        try:
+            df = pd.DataFrame([row.split(";") for row in current_rows], columns=current_headers)
+            ilk_kolon = df.columns[0]
+            tarih_kolonlari_raw = df.columns[1:]
+            tarih_kolonlari = pd.to_datetime(tarih_kolonlari_raw, errors='coerce')  # 👈 bu satır değiştirildi
+            df.columns = [ilk_kolon] + tarih_kolonlari.tolist()
+            df = df.set_index(ilk_kolon)
+            for col in df.columns:
+                df[col] = df[col].astype(str).str.replace('.', '', regex=False).str.replace(',', '.', regex=False)
+                df[col] = pd.to_numeric(df[col], errors='coerce')
 
-            if df_current_table.empty:
-                print(f"Tablo '{table_name}' işlendikten sonra boş kaldı. Atlanıyor.")
-                continue
+            df = df.dropna(how='all', axis=0)
 
-            print(f"\nTablo: {table_name} - İşlenmiş Veri (Transpose Öncesi):")
-            print(df_current_table)
-            print(f"Data Types: {df_current_table.dtypes}")
+        except Exception as e:
+            return
 
-            for sutun_adi in hedef_sutunlar:
-                if sutun_adi in df_current_table.index: # 'sutun_adi' artık satır indeksi
-                    # Bu satır, df_current_table'dan ilgili kalemin tüm dönem verilerini bir Series olarak alır.
-                    # Örneğin, df_current_table.loc['Toplam Varlıklar'] --> Series (Index: Dönemler, Value: Tutar)
-                    series_for_plot = df_current_table.loc[sutun_adi]
+        for sutun_adi in hedef_kalemler:
+            if sutun_adi in df.index:
+                series_for_plot = df.loc[sutun_adi]
 
-                    # Şimdi bu Series'i DataFrame'e dönüştürürken, index'i dönemler, sütun adı ise kalem adı olsun istiyoruz.
-                    # Eğer Series boşsa veya tamamen NaN ise grafik oluşturmamalıyız.
-                    if series_for_plot.empty or series_for_plot.isnull().all():
-                        print(f"Uyarı: '{sutun_adi}' için veri bulunamadı veya hepsi NaN. Grafik atlanıyor.")
-                        continue
+                if series_for_plot.empty or series_for_plot.isnull().all():
+                    continue
 
-                    # df_for_plot'u doğru şekilde oluşturma:
-                    # Series'i DataFrame'e çevir, böylece index'i (dönemler) ve tek bir sütunu (değerler) olur.
-                    df_for_plot = series_for_plot.to_frame(name=sutun_adi) # Series'i, kalem adıyla bir sütuna sahip DataFrame'e dönüştür
+                df_for_plot = series_for_plot.to_frame(name=sutun_adi)
+                df_for_plot.index.name = "Dönem"
 
-                    # Index'in adını Dönem olarak ayarla (isteğe bağlı, görselleştirme için)
-                    df_for_plot.index.name = "Dönem"
+                is_kar_zarar_plot = (sutun_adi == "Net Dönem Kârı (Zararı)")
 
-                    print(f"\nGrafik için hazırlanmış DF ({sutun_adi}):")
-                    print(df_for_plot)
-                    print(f"Data Types: {df_for_plot.dtypes}")
-                    print(f"Shape: {df_for_plot.shape}")
+                grafik = grafik_uret(df_for_plot, f"{sutun_adi} Zaman İçinde", "Tutar (TL)", kar_zarar=is_kar_zarar_plot)
 
+                if grafik:
+                    grafikler[sutun_adi] = grafik
 
-                    # Net Dönem Kârı (Zararı) için özel bayrak
-                    is_kar_zarar_plot = (sutun_adi == "Net Dönem Kârı (Zararı)")
+                try:
+                    ilk = df_for_plot.iloc[0, 0]
+                    son = df_for_plot.iloc[-1, 0]
 
-                    grafik = grafik_uret(df_for_plot, f"{sutun_adi} Zaman İçinde", "Tutar (TL)", kar_zarar=is_kar_zarar_plot)
-                    
-                    if grafik:
-                        grafikler[sutun_adi] = grafik
-                    else:
-                        print(f"Grafik oluşturulamadı: {sutun_adi}")
-
-                    try:
-                        # Yorum için ilk ve son değerleri al
-                        ilk = df_for_plot.iloc[0, 0] if not df_for_plot.empty and pd.notna(df_for_plot.iloc[0, 0]) else 0
-                        son = df_for_plot.iloc[-1, 0] if not df_for_plot.empty and pd.notna(df_for_plot.iloc[-1, 0]) else 0
-
-                        if pd.notna(ilk) and pd.notna(son) and (ilk != 0 or son != 0): # Sayısal değerlerse ve ikisi de 0 değilse
-                            prompt = (
-                                f"CSV dosyasındaki '{sutun_adi}' değeri {ilk:,.2f} TL'den {son:,.2f} TL'ye değişmiştir. "
-                                f"Bu değişime dair kısa ve sade 3-5 maddelik mali yorum yaz. "
-                                f"Yorumları Türkçe ve maddeler halinde (örneğin: '- Madde 1', '- Madde 2' şeklinde) yaz."
-                            )
-                            ai_response = gemini_model.generate_content(prompt)
-                            temiz_yorum = temizle_ve_duzenle_yorum(ai_response.text)
-                            ai_yorumlar.append({
-                                "baslik": sutun_adi,
-                                "yorum": temiz_yorum
-                            })
-                        else:
-                            print(f"{sutun_adi} için yorum üretilmiyor: Geçersiz veya sıfır başlangıç/bitiş değeri.")
-
-                    except Exception as e:
-                        print(f"{sutun_adi} için yorum üretilirken hata oluştu: {str(e)}")
+                    if pd.notna(ilk) and pd.notna(son) and (ilk != 0 or son != 0):
+                        prompt = (
+                            f"{sutun_adi} adlı finansal kalem {ilk:,.2f} TL'den {son:,.2f} TL'ye değişmiştir.\n"
+                            f"Bu değişimin olası nedenlerini analiz et. Sektörel etkiler, ekonomik gelişmeler veya operasyonel faktörleri göz önüne al. "
+                            f"Kısa ve sade 3-5 maddelik bir mali yorum yaz. Türkçe yaz, maddeler halinde sırala."
+                        )
+                        ai_response = gemini_model.generate_content(prompt)
+                        temiz_yorum = temizle_ve_duzenle_yorum(ai_response.text)
                         ai_yorumlar.append({
                             "baslik": sutun_adi,
-                            "yorum": f"{sutun_adi} için yorum üretilemedi: {str(e)}"
+                            "yorum": temiz_yorum
                         })
-                else:
-                    print(f"Hedef kalem '{sutun_adi}' bu tabloda (index'te) bulunamadı.")
+                except Exception as e:
+                    ai_yorumlar.append({
+                        "baslik": sutun_adi,
+                        "yorum": f"{sutun_adi} için yorum üretilemedi: {str(e)}"
+                    })
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        if "TABLOSU" in line and ";" in line:
+            process_current_table()
+            parts = line.split(";")
+            current_table_name = parts[0].strip()
+            current_headers = parts
+            current_rows = []
         else:
-            print(f"Uyarı: df_raw.iloc[start + 1] index hatası veya data_content boş, start: {start}")
+            current_rows.append(line)
+
+    process_current_table()
 
     return jsonify({
         "grafikler": grafikler,
