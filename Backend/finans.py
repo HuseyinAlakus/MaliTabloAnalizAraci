@@ -108,7 +108,13 @@ def analyze_csv():
             "Aşağıdaki finansal değişim yorumlarına göre şirketin genel mali durumu nasıldır?\n\n"
             "Lütfen yanıtını şu başlıklarla yapılandır ve her başlık altında ayrı paragraflar halinde açıklama yap:\n"
             "- Olumlu Yönler\n- Olumsuz Yönler\n- Genel Değerlendirme\n- Öneriler\n- Sonuç\n\n"
-            "Yanıtınızda kesinlikle başlık dışında hiçbir yıldız (*), tire (-), numara (1., 2.), ya da markdown biçimi kullanmayın. Her şey düz yazı olsun."
+            "Yalnızca aşağıdaki başlıklarla ve bu sırayla düzenlenmiş düz paragraflar içeren bir yanıt ver:"
+            "1. Olumlu Yönler"
+            "2. Olumsuz Yönler"
+            "3. Genel Değerlendirme"
+            "4. Öneriler"
+            "5. Sonuç"
+            "Lütfen: Yalnızca yukarıdaki başlıkları kullan. Başlıkların dışında **yıldız, tire, numara, markdown veya özel karakter** kullanma."
             + yorumlar
         )
         

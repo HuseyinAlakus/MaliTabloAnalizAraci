@@ -57,12 +57,20 @@ def grafik_uret(df, baslik, y_etiketi, is_bar=False, kar_zarar=False):
         if df_copy.shape[1] == 1:
             values = df_copy.iloc[:, 0]
             renkler_kar_zarar = ['green' if v >= 0 else 'red' for v in values]
-            ax.bar(df_copy.index, values, color=renkler_kar_zarar)
+            
+            # Barları ayrı ayrı çiz (renk uygulanmasını garanti eder)
+            for i, (label, value) in enumerate(zip(df_copy.index, values)):
+                ax.bar(label, value, color=renkler_kar_zarar[i], edgecolor='black', linewidth=0.5, width=50)
+                ax.text(label, value + (1e6 if value >= 0 else -1e6), f"{value/1e6:.1f}M", 
+                        ha='center', va='bottom' if value >= 0 else 'top', fontsize=8)
+
             ax.set_title("Yıllara Göre Kâr/Zarar", fontsize=14, fontweight='bold')
             ax.set_ylabel("Tutar (M TL)")
         else:
             plt.close(fig)
             return None
+
+
     elif is_bar:
         if df_copy.shape[1] == 1:
             ax.bar(df_copy.index, df_copy.iloc[:, 0], color=renkler[0])
@@ -207,6 +215,7 @@ def grafik_analyze():
                             f"{sutun_adi} adlı finansal kalem {ilk:,.2f} TL'den {son:,.2f} TL'ye değişmiştir.\n"
                             f"Bu değişimin olası nedenlerini analiz et. Sektörel etkiler, ekonomik gelişmeler veya operasyonel faktörleri göz önüne al. "
                             f"Kısa ve sade 3-5 maddelik bir mali yorum yaz. Türkçe yaz, maddeler halinde sırala."
+                            "Yanıtınızda kesinlikle başlık dışında hiçbir yıldız (*), tire (-), numara (1., 2.), ya da markdown biçimi kullanmayın. Her şey düz yazı olsun."
                         )
                         ai_response = gemini_model.generate_content(prompt)
                         temiz_yorum = temizle_ve_duzenle_yorum(ai_response.text)

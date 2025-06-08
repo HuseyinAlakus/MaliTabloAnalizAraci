@@ -164,3 +164,61 @@ h1 {
     border-bottom: 1px solid #ddd;
     padding-bottom: 5px;
 }
+/* Yorum Kartları Bölümü */
+.comment-section {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.comment-section h2 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+/* Kartları yan yana dizmek için grid */
+.comment-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Her yorum kutusu */
+.comment-card {
+    background-color: #fff;
+    border-left: 6px solid #1abc9c;
+    border-radius: 10px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    text-align: left;
+    transition: transform 0.2s ease;
+}
+
+.comment-card:hover {
+    transform: scale(1.02);
+}
+
+/* Başlık kısmı */
+.comment-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+/* Açıklama kısmı */
+.comment-body {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Yorum altı buton grubu */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
