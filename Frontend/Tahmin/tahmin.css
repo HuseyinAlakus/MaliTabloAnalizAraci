@@ -130,3 +130,65 @@ h1 {
     background: white;
     color: #77889b;
 }
+.analysis-section h3 {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #2c3e50;
+    border-left: 5px solid #2980b9;
+    padding-left: 12px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    background-color: #ecf0f1;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 4px;
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.analysis-section p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+/* Başlık stilleri */
+.title-section {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: #2c3e50;
+    border-left: 5px solid #2980b9;
+    padding-left: 12px;
+    background-color: #ecf0f1;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.title-section i {
+    color: #2980b9;
+    margin-right: 8px;
+}
+
+/* Paragraf stilleri */
+.analysis-paragraph {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    text-align: justify;
+    color: #2d3436;
+    background-color: #f8f9fa;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #e1e1e1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.button-group .btn {
+    text-decoration: none;
+}

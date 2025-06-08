@@ -31,30 +31,114 @@
         </div>
     </div>
     <script>
-        function handleFileUpload() {
-            const fileInput = document.getElementById('fileInput');
-            const resultsDiv = document.getElementById('results');
-            if (fileInput.files.length === 0) {
-                alert('Lütfen bir CSV dosyası seçin.');
-                return;
-            }
-            resultsDiv.innerHTML = '<h2>Analiz Sonuçları</h2><p>Dosyanız başarıyla yüklendi. İşleniyor...</p>';
-            setTimeout(() => {
-                resultsDiv.innerHTML += '<p>Analiz tamamlandı! Sonuçlar burada görünecek.</p>';
-            }, 2000);
-                window.addEventListener("DOMContentLoaded", () => {
-        const csvData = localStorage.getItem("csvData");
-        const resultsDiv = document.getElementById("results");
+  // Sayfa yüklendiğinde geçmiş CSV varsa işle
+  window.addEventListener('DOMContentLoaded', async () => {
+    const csvData = localStorage.getItem("csvData");
+    const resultsDiv = document.getElementById('results');
 
-        if (csvData) {
-            resultsDiv.innerHTML = `
-                <h2>Analiz Sonuçları</h2>
-                <p>CSV veriniz başarıyla yüklendi:</p>
-                <pre style="text-align:left; background:#f1f1f1; padding:10px; border-radius:5px; overflow:auto; max-height:400px;">${csvData}</pre>
-            `;
+    if (!csvData) {
+        resultsDiv.innerHTML = "<p style='color:red;'>CSV verisi bulunamadı. Lütfen finansal analiz sayfasından tekrar yükleyin.</p>";
+        return;
+    }
+
+    resultsDiv.innerHTML = "<p>Önceki veriler analiz ediliyor, lütfen bekleyin...</p>";
+
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const file = new File([blob], "veri.csv");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+        resultsDiv.innerHTML = '<h2>Analiz Sonuçları</h2><p>Dosyanız başarıyla yüklendi. İşleniyor...</p>';
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000/future-analyze", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Sunucu hatası: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            // Sonuçları temizle
+            resultsDiv.innerHTML = '<h2>Analiz Sonuçları</h2>';
+
+            // Trendler gösterimi
+            if (data.trends && data.trends.length > 0) {
+                const trendsHTML = `
+                    <div>
+                        <h3>Finansal Trendler</h3>
+                        <ul>
+                            ${data.trends.map(t => `<li>${t}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                resultsDiv.insertAdjacentHTML('beforeend', trendsHTML);
+            }
+
+            // Özet tablo gösterimi
+            if (data.summary) {
+                let tableRows = '';
+                Object.entries(data.summary).forEach(([key, val]) => {
+                    tableRows += `
+                        <tr>
+                            <td>${key}</td>
+                            <td>${val.mean?.toLocaleString('tr-TR') ?? '-'}</td>
+                            <td>${val.std?.toLocaleString('tr-TR') ?? '-'}</td>
+                            <td>${val.min?.toLocaleString('tr-TR') ?? '-'}</td>
+                            <td>${val.max?.toLocaleString('tr-TR') ?? '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                const summaryHTML = `
+                    <div>
+                        <h3>İstatistik Özeti</h3>
+                        <table border="1" cellpadding="5" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Kalem</th>
+                                    <th>Ortalama</th>
+                                    <th>Std Sapma</th>
+                                    <th>Min</th>
+                                    <th>Max</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                resultsDiv.insertAdjacentHTML('beforeend', summaryHTML);
+            }
+
+            // Yapay zeka yorumu
+            if (data.future_commentary) {
+                const aiCommentHTML = `
+                    <div class="analysis-section">
+                        <h3><i class="fas fa-brain"></i> Yapay Zeka Gelecek Analizi</h3>
+                        <div>${data.future_commentary}</div>
+                    </div>
+                    <div class="button-group">
+                        <a class="btn" href="../Finansal/finans.html">Analiz</a>
+                        <a class="btn" href="../Raporlama/raporlama.html">Raporlama</a>
+                    </div>
+                `;
+
+                resultsDiv.insertAdjacentHTML('beforeend', aiCommentHTML);
+            }
+
+        } catch (error) {
+            resultsDiv.innerHTML = `<p style="color:red;">Bir hata oluştu: ${error.message}</p>`;
         }
     });
-        }
-    </script>
+</script>
+
 </body>
 </html>
