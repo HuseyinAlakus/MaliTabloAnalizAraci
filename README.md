@@ -64,3 +64,25 @@ Katkı ve Danışmanlık
 Hüseyin Alakuş – Geliştirici
 
 Doç. Dr. İlyas Özer – Akademik Danışman
+
+![image](https://github.com/user-attachments/assets/f96f8409-f5e7-4a66-b5ec-0798c200cf93)
+
+![image](https://github.com/user-attachments/assets/64cdee23-ffd2-419c-8420-0b14f03053d1)
+
+![image](https://github.com/user-attachments/assets/d8ea968a-54f7-4a29-bf85-ad63d7f1477d)
+
+![image](https://github.com/user-attachments/assets/edda00ca-b6a8-47ca-be82-e412e7c1abfb)
+
+![image](https://github.com/user-attachments/assets/77053cf6-c6ad-42a4-9125-20dc618f4d4e)
+
+![image](https://github.com/user-attachments/assets/ff5a9782-ddc6-47ed-afdf-bd87ccb37d9f)
+
+![image](https://github.com/user-attachments/assets/186c2385-cfe4-4e7c-bdcf-9311ed80855f)
+
+![image](https://github.com/user-attachments/assets/9ea28612-a575-4fef-b4f0-675ba1324cee)
+
+![image](https://github.com/user-attachments/assets/e789bfce-d1df-4a8b-a17e-afc71b314377)
+
+![image](https://github.com/user-attachments/assets/9bccb512-9196-4f8e-8de4-1410962d0652)
+
+![image](https://github.com/user-attachments/assets/2a6a1514-1163-454f-a5e7-e6ef5baf540d)
